@@ -22,9 +22,9 @@ line7 db 000b, 001b, 000b, 001b, 000b, 001b, 000b, 001b
 line6 db 001b, 000b, 001b, 000b, 001b, 000b, 001b, 000b
 line5 db 000b, 111b, 000b, 111b, 000b, 111b, 000b, 111b
 line4 db 111b, 000b, 111b, 000b, 111b, 000b, 111b, 000b
-line3 db 010b, 000b, 010b, 000b, 010b, 000b, 010b, 000b
-line2 db 000b, 010b, 000b, 010b, 000b, 010b, 000b, 010b
-line1 db 010b, 000b, 010b, 000b, 010b, 000b, 010b, 000b
+line3 db 000b, 010b, 000b, 010b, 000b, 010b, 000b, 010b
+line2 db 010b, 000b, 010b, 000b, 010b, 000b, 010b, 000b
+line1 db 000b, 010b, 000b, 010b, 000b, 010b, 000b, 010b
 
 f8 db '8 |', '$'
 f7 db '7 |', '$'
@@ -45,23 +45,25 @@ sf db '  |', '$'
 ;=========================== REPORTE HTML ===========================
 
 msmCreado db 'Reporte HTML creado', '$'
-rutaHtml db 'reporte.txt', 00
-headerHtml db '<html lang="es"> <head>  <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0">  <title>Estado Tablero</title> </head> <body>', '$'
+rutaHtml db 'reporte.html', 00
+headerHtml db '<!DOCTYPE html><html> <head>  <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0">  <title>Estado Tablero</title> </head> <body>', '$'
 titleHtml db '<h1 text-align: center;>'
 tituloHtml db '24/09/2020 - 10:58:56 PM' 
 titleHtml2 db '</h1>'
-tableHtml db '<table class="table" border="collapse" >'
-rowHtml db ' <tr>'
-FichaRHtml  db '<td style="background:  #973a29;"> <image src="red.png" height=></image> </td>'
-FichaBHtml  db '<td style="background:  #973a29;"> <image src="white.png"></image> </td>'
-FichaRRHtml db '<td style="background:  #973a29;"> <image src="CoronaN.png"></image> </td>'
-FichaRBHmtl db '<td style="background:  #973a29;"> <image src="CoronaB.png"></image> </td>'
-SpaceBlanco db '<td style="background:  #fffdd0;"></td>'
-SpaceNegro  db '<td style="background:  #b35110;"></td>'
-rowHtml2 db '</tr>'
-txtTableF db '</table>'
-
+tableStart db '<table class="table" border="collapse" >'
+rowStart db ' <tr>'
+FichaRHtml  db '<td style="background:  #973a29;"> <img src="red.png"></td>'
+FichaBHtml  db '<td style="background:  #973a29;"> <img src="white.png"> </td>'
+FichaRRHtml db '<td style="background:  #973a29;"> <img src="CoronaN.png"> </td>'
+FichaRBHmtl db '<td style="background:  #973a29;"> <img src="CoronaB.png"> </td>'
+SpaceBlanco db '<td style="background:  #fffdd0; width:50px; height: 50px" ></td>'
+SpaceNegro  db '<td style="background:  #b35110; width:50px; height: 50px" ></td>'
+rowEnd db '</tr>'
+tableEnd db '</table>'
 finalHtml db '</body> </html>'
+
+date  db "00/00/0000",0dh, 0ah,'$'
+time db"00:00:00", 0dh, 0ah, '$'
 
 ;msm1 db 0ah,0dh,'FUNCION ABRIR',0ah,0dh,'$'
 ;msm2 db 0ah,0dh,'FUNCION CREAR',0ah,0dh,'$'
@@ -72,8 +74,9 @@ msmError3 db 0ah,0dh,'Error al crear archivo','$'
 msmError4 db 0ah,0dh,'Error al Escribir archivo','$'
 rutaArchivo db 100 dup('$')
 bufferLectura db 100 dup('$')
-bufferEscritura db 200 dup('$')
+bufferEscritura db 100 dup('$')
 handleFichero dw ?
+
 .code ;segmento de código
 ;================== SECCION DE CODIGO ===========================
 	main proc 
@@ -94,20 +97,14 @@ handleFichero dw ?
         JUGAR:
 			print salto
 			printTable 
-			jmp CREAR
+			jmp REPORTE
         CARGAR:
 		SALIR: 
 			MOV ah,4ch 
 			int 21h
-		CREAR:
-			createFile rutaHtml, handleFichero
-			jmp ESCRIBIR
-		ESCRIBIR:
-			print msm3
-			openFile rutaHtml, handleFichero
-			getText bufferEscritura
-		    writeFile SIZEOF bufferEscritura, bufferEscritura,handleFichero
-			closeFile handleFichero
+		REPORTE:
+			print msm3 ; mensaje de creando archivo
+			generateHtml
 			print msmCreado
 			getChar
 			jmp Menu
